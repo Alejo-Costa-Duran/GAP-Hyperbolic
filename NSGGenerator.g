@@ -23,8 +23,8 @@ gen[8]:=G.1^-1;;gen[9]:=G.2^-1;;gen[10]:=G.3^-1;;gen[11]:=G.4^-1;;gen[12]:=G.5^-
 Print("done\n");
 
 # define maximal index
-n_max:=29;;
-n_group:=3;
+n_max:= 4;;
+n_group:=100;
 # compute all normal subgroups of index up to nmax
 t_initial:=Runtime();;
 Print("Computing first ",n_group," normal subgroups of index ",n_max,"... \n");
@@ -45,6 +45,6 @@ od;
 for k in [1..n_max] do
 	Print("Index ",k,": ",nsg[k]," normal subgroups\n");
 od;
-workspace_file:=Concatenation("./Workspaces/Index",String(n_max),".bin");;
+workspace_file:=Concatenation("../Workspaces/Index",String(n_max),".bin");;
 Print("Saving workspace on ",workspace_file,"\n");
 SaveWorkspace(workspace_file);;

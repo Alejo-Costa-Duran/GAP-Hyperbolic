@@ -9,30 +9,30 @@
 # read all 56 nontrivial length-2 elements (enumerated using Matlab)
 # and find which ones appear in the transversal
 # maximal index that LINS has computed
-nmax:=23;;
+nmax:=4;;
 
 # index for which we want to compute the hopping matrices and output the transversal
-n:=23;;
+n:=4;;
 
 
 Read("./2LetterWords.g");
 
 
 # initialize empty file: transversal data
-filenameT:="./PBCData/p2anisT_n17.m";;
+filenameT:=Concatenation("../PBCData/TransversalInfo,",String(n),"Clusters.py");;
 PrintTo(filenameT);;
 # initialize empty file: hopping matrix
-filenameH:="./PBCData/p2anisH_n17.m";;
-PrintTo(filenameH);;
-# initialize empty file: translation matrices
-# (only root of filename here, subgroup label will be appended later)
-rootfnameU:="./PBCData/p2anisU_n17_k";;
+filenameCT:=Concatenation("../PBCData/CosetTable",String(n),"Clusters.py");;
 
+
+AppendTo(filenameT,"import numpy as np \nSubgroupLabel = np.zeros(",nsg[n]+1,") \n", "glabel = np.zeros((",n+1,",",nsg[n]+1,")) \n", "ga = [[] for n in range(",nsg[n],")] \n");
+
+AppendTo(filenameCT,"import numpy as np\nCT = np.zeros((",n,",",n,",",nsg[n]+1,"))\n");
 belown:=Sum(nsg{[1..n-1]});;
 # loop through all subgroups of index n
 kanis:=0;;
 p2anis:=[];;
-for k in [1..100] do
+for k in [1..nsg[n]] do
 	# construct transversal T_n^{(k)}, k = 1,...,n
 	T:=RightTransversal(G,Grp(List_NSG[belown+k]));;
 	# canonical position of cosets
@@ -42,22 +42,15 @@ for k in [1..100] do
 	for m in [1..14] do
         	p2[1+m]:=PositionCanonical(T,gen[m]);;
     od;
-    for m in [2..15] do
-        Print(p2[m],"\t");
-        od;
-        Print("\n");
+	for m in [1..182] do # 182 length-2 words
+			p2[15+m]:=PositionCanonical(T,p2wds[m]);
+
+		od;
 	# check that identity is the first element	
 	if p2[1] <> 1 then
         	Print("First coset not identity for k=",k,"!\n");
         	break;
-	# check that length-1 words appear as distinct elements in the transversal
-    	elif IsDuplicateFree(p2{[1..14]}) then
-            Print("Is Duplicate free");
-        	for m in [1..182] do # 182 length-2 words
-			p2[15+m]:=PositionCanonical(T,p2wds[m]);
-		od;
-        	# search for clusters: array p2 contains {1,2,...,n}
-        	if IsSubsetSet(p2,[1..n]) then
+	fi;
             		Print("found! L[",belown+k,"].Group\n");
             		kanis:=kanis+1;;
             		p2anis[kanis]:=belown+k;;
@@ -101,67 +94,39 @@ for k in [1..100] do
                 		break;
             		fi;
 			# output transversal data to file
-			AppendTo(filenameT,"SgLabel(",kanis,")=",p2anis[kanis],";\n");			
-			for i in [1..n] do
-				AppendTo(filenameT,"glabel(",i,",",kanis,")=",glabel[i],";\n");
-			od;
-            		# initialize hopping matrix to zero
-            		H:=DiagonalMat([1..n]);;
-            		for i in [1..n] do
-                		H[i][i]:=0;;
-            		od;
-            		for i in [1..n] do # pick a site
-                		for a in [1..14] do # find its 8 nearest neighbors
-                    			j:=PositionCanonical(T,g[i]*gen[a]);
-                    			if i <> j then
-                        			H[i][j]:=-1;;
-                    			fi;
-                		od;
-            		od;
-            		# output hopping matrices in Matlab-ready format
-            		AppendTo(filenameH,"SgLabel(",kanis,")=",p2anis[kanis],";\n");
-            		AppendTo(filenameH,"H(:,:,",kanis,")=[");;
-            		for i in [1..n-1] do # write first n-1 rows of H matrix
-                		for j in [1..n] do
-                    			AppendTo(filenameH," ",H[i][j]);;
-                		od;
-                		AppendTo(filenameH,";\n");;
-            		od;
-            		for j in [1..n] do # write last row of H matrix
-                		AppendTo(filenameH," ",H[n][j]);;
-            		od;
-            		AppendTo(filenameH,"];\n");;
-			# construct translation U matrices
-			filenameU:=Concatenation(rootfnameU,PrintString(kanis),".m");;
-			PrintTo(filenameU);;
-			for kk in [1..n] do # U_{ij}(g_k) for each k=1,...,n
-				# initialize U matrix to zero
-				U:=DiagonalMat([1..n]);;
-				for i in [1..n] do
-					U[i][i]:=0;;
-				od;
-				for j in [1..n] do
-					i:=PositionCanonical(T,g[kk]*g[j]);;
-					U[i][j]:=1;;
-				od;
-				# output U matrix in Matlab-ready format
-				AppendTo(filenameU,"U(:,:,",kk,")=[");;
-                		for i in [1..n-1] do # write first n-1 rows of U matrix
-                        		for j in [1..n] do
-                                		AppendTo(filenameU," ",U[i][j]);;
-                        		od;
-                        		AppendTo(filenameU,";\n");;
-                		od;
-                		for j in [1..n] do # write last row of U matrix
-                        		AppendTo(filenameU," ",U[n][j]);;
-                		od;
-                		AppendTo(filenameU,"];\n");;
-			od;
-        	fi;
-        fi;
-
-od;
+		AppendTo(filenameT,"SubGroupLabel[",kklein,"]=",p1klein[kklein],"\n");			
+		for i in [1..n] do
+			AppendTo(filenameT,"glabel[",i,",",kklein,"]=",glabel[i],"\n");
+		od;
+		AppendTo(filenameT,"ga[",kanis,"]=[");
+		for m in [1..13] do
+			AppendTo(filenameT,p2[1+m]-1,",");
+		od;
+			AppendTo(filenameT,p2[1+14]-1,"]\n");
+					CT:=DiagonalMat([1..n]);;
+                for i in [1..n] do
+                	CT[i][i]:=0;;
+                od;
+                for i in [1..n] do
+                	for j in [1..n] do
+                        	CT[i][j]:=PositionCanonical(T,g[i]*g[j]);;
+                        od;
+                od;
+			                # output coset table in Matlab format
+                AppendTo(filenameCT,"# L[",p2anis[kanis],"].Group\n");
+                AppendTo(filenameCT,"CT[:,:,",kanis,"]=[");;
+                for i in [1..n-1] do # write first n-1 rows of coset table
+                	AppendTo(filenameCT,"[",CT[i][1]-1);;
+					for j in [2..n-1] do
+                    	AppendTo(filenameCT,",",CT[i][j]-1);;
+                    od;
+                    AppendTo(filenameCT,",",CT[i][n]-1,"],");;
+                od;
+                AppendTo(filenameCT,"[",CT[n][1]-1);;
+				for j in [2..n-1] do
+                   	AppendTo(filenameCT,",",CT[n][j]-1);;
+                od;
+                AppendTo(filenameCT,",",CT[n][n]-1,"]");;
+                AppendTo(filenameCT,"]\n");;
+ od;
 Print("Found ",kanis," anisotropic clusters with ",n," sites\n");
-
-
-	
